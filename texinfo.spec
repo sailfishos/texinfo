@@ -26,6 +26,16 @@ Install texinfo if you want a documentation system for producing both
 online and print documentation from the same source file and/or if you
 are going to write documentation for the GNU Project.
 
+%package doc
+Summary:   Documentation for %{name}
+Group:     Documentation
+Requires:  %{name} = %{version}-%{release}
+Requires(post): /sbin/install-info
+Requires(postun): /sbin/install-info
+
+%description doc
+Man and info pages for %{name}.
+
 %package -n info
 Summary: A stand-alone TTY-based reader for GNU texinfo documentation
 Group: System/Base
@@ -34,6 +44,16 @@ Group: System/Base
 The GNU project uses the texinfo file format for much of its
 documentation. The info package provides a standalone TTY-based
 browser program for viewing texinfo files.
+
+%package -n info-doc
+Summary:   Documentation for info
+Group:     Documentation
+Requires:  info = %{version}-%{release}
+Requires(post): /sbin/install-info
+Requires(postun): /sbin/install-info
+
+%description -n info-doc
+Man and info pages for info.
 
 %package tex
 Summary: Tools for formatting Texinfo documentation files using TeX
@@ -73,6 +93,10 @@ install -p -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_mandir}/man1/texi2pdf.1
 install -p -m644 %{SOURCE1} $RPM_BUILD_ROOT%{_infodir}/dir
 mv $RPM_BUILD_ROOT%{_bindir}/install-info $RPM_BUILD_ROOT/sbin
 
+mkdir -p $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version}
+install -m0644 -t $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version} \
+        AUTHORS ChangeLog INTRODUCTION NEWS README TODO
+
 # Convert ChangeLog to UTF-8
 /usr/bin/iconv -f iso-8859-2 -t utf-8 < ChangeLog > ChangeLog_utf8
 touch -r ChangeLog ChangeLog_utf8
@@ -83,19 +107,19 @@ mv ChangeLog_utf8 ChangeLog
 %clean
 rm -rf ${RPM_BUILD_ROOT}
 
-%post
+%post doc
 if [ -f %{_infodir}/texinfo ]; then # --excludedocs?
     /sbin/install-info %{_infodir}/texinfo %{_infodir}/dir || :
 fi
 
-%preun
+%preun doc
 if [ $1 = 0 ]; then
     if [ -f %{_infodir}/texinfo ]; then # --excludedocs?
         /sbin/install-info --delete %{_infodir}/texinfo %{_infodir}/dir || :
     fi
 fi
 
-%post -n info
+%post -n info-doc
 if [ -f %{_infodir}/info-stnd.info ]; then # --excludedocs?
     /sbin/install-info %{_infodir}/info-stnd.info %{_infodir}/dir
 fi
@@ -103,7 +127,7 @@ if [ -x /bin/sed ]; then
     /bin/sed -i '/^This is.*produced by makeinfo.*from/d' %{_infodir}/dir || :
 fi
 
-%preun -n info
+%preun -n info-doc
 if [ $1 = 0 ]; then
     if [ -f %{_infodir}/info-stnd.info ]; then # --excludedocs?
         /sbin/install-info --delete %{_infodir}/info-stnd.info %{_infodir}/dir \
@@ -120,22 +144,34 @@ fi
 
 %files -f %{name}.lang
 %defattr(-,root,root,-)
-%doc AUTHORS ChangeLog INTRODUCTION NEWS README TODO COPYING
+%license COPYING
 %{_bindir}/makeinfo
 %{_datadir}/texinfo
 %{_infodir}/texinfo*
+
+%files doc
+%defattr(-,root,root,-)
+%{_infodir}/%{name}*.*
 %{_mandir}/man1/makeinfo.1*
-%{_mandir}/man5/texinfo.5*
+%{_mandir}/man5/%{name}.5*
+%{_mandir}/man1/texindex.1*
+%{_mandir}/man1/texi2dvi.1*
+%{_mandir}/man1/texi2pdf.1*
+%{_mandir}/man1/pdftexi2dvi.1*
+%{_docdir}/%{name}-%{version}
 
 %files -n info
 %defattr(-,root,root,-)
 %config(noreplace) %verify(not md5 size mtime) %{_infodir}/dir
-%doc COPYING
+%license COPYING
 %{_bindir}/info
 %{_bindir}/infokey
+/sbin/install-info
+
+%files -n info-doc
+%defattr(-,root,root,-)
 %{_infodir}/info.info*
 %{_infodir}/info-stnd.info*
-/sbin/install-info
 %{_mandir}/man1/info.1*
 %{_mandir}/man1/infokey.1*
 %{_mandir}/man1/install-info.1*
@@ -148,8 +184,3 @@ fi
 %{_bindir}/texi2pdf
 %{_bindir}/pdftexi2dvi
 %{tex_texinfo}/
-%{_mandir}/man1/texindex.1*
-%{_mandir}/man1/texi2dvi.1*
-%{_mandir}/man1/texi2pdf.1*
-%{_mandir}/man1/pdftexi2dvi.1*
-
