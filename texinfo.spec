@@ -3,7 +3,7 @@
 Summary: Tools needed to create Texinfo format documentation files
 Name: texinfo
 Version: 4.13a
-Release: 7
+Release: 8
 License: GPLv3+
 Group: Applications/Publishing
 Url: http://www.gnu.org/software/texinfo/
