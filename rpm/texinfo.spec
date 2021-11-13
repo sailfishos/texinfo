@@ -1,14 +1,13 @@
-%define tex_texinfo %{_datadir}/texmf/tex/texinfo
-
 Summary: Tools needed to create Texinfo format documentation files
 Name: texinfo
-Version: 6.3
+Version: 6.7
 Release: 1
 License: GPLv3+
 Url: http://www.gnu.org/software/texinfo/
 Source0: %{name}-%{version}.tar.gz
 Source1: info-dir
 Patch0: texinfo-4.12-zlib.patch
+Patch1: texinfo-disable-tex.patch
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -22,8 +21,8 @@ BuildRequires: pkgconfig(ncurses)
 
 %global __provides_exclude ^perl\\(.*Texinfo.*\\)$
 %global __requires_exclude ^perl\\(.*Texinfo.*\\)$
-%global __provides_exclude ^perl\\(.*gettext_xs.*\\)$
-%global __requires_exclude ^perl\\(.*gettext_xs.*\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(.*gettext_xs.*\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(.*gettext_xs.*\\)$
 
 %description
 Texinfo is a documentation system that can produce both online
@@ -60,21 +59,6 @@ Requires(postun): /sbin/install-info
 %description -n info-doc
 Man and info pages for info.
 
-%package tex
-Summary: Tools for formatting Texinfo documentation files using TeX
-Requires: texinfo = %{version}-%{release}
-Requires: tetex
-Requires(post): %{_bindir}/texconfig-sys
-Requires(postun): %{_bindir}/texconfig-sys
-
-%description tex
-Texinfo is a documentation system that can produce both online
-information and printed output from a single source file. The GNU
-Project uses the Texinfo file format for most of its documentation.
-
-The texinfo-tex package provides tools to format Texinfo documents
-for printing using TeX.
-
 %prep
 %autosetup -p1 -n %{name}-%{version}/%{name}
 
@@ -87,9 +71,6 @@ for printing using TeX.
 mkdir -p ${RPM_BUILD_ROOT}/sbin
 
 %make_install
-
-mkdir -p $RPM_BUILD_ROOT%{tex_texinfo}
-install -p -m644 doc/texinfo.tex doc/txi-??.tex $RPM_BUILD_ROOT%{tex_texinfo}
 
 install -p -m644 %{SOURCE1} $RPM_BUILD_ROOT%{_infodir}/dir
 mv $RPM_BUILD_ROOT%{_bindir}/install-info $RPM_BUILD_ROOT/sbin
@@ -129,12 +110,6 @@ if [ $1 = 0 ]; then
     fi
 fi
 
-%post tex
-%{_bindir}/texconfig-sys rehash 2> /dev/null || :
-
-%postun tex
-%{_bindir}/texconfig-sys rehash 2> /dev/null || :
-
 
 %files -f %{name}.lang -f %{name}_document.lang
 %defattr(-,root,root,-)
@@ -150,11 +125,7 @@ fi
 %{_infodir}/%{name}*.*
 %{_mandir}/man1/makeinfo.1*
 %{_mandir}/man5/%{name}.5*
-%{_mandir}/man1/texindex.1*
 %{_mandir}/man1/texi2any.1*
-%{_mandir}/man1/texi2dvi.1*
-%{_mandir}/man1/texi2pdf.1*
-%{_mandir}/man1/pdftexi2dvi.1*
 %{_mandir}/man1/pod2texi.1*
 
 %{_docdir}/%{name}-%{version}
@@ -172,11 +143,3 @@ fi
 %{_mandir}/man1/info.1*
 %{_mandir}/man1/install-info.1*
 %{_mandir}/man5/info.5*
-
-%files tex
-%defattr(-,root,root)
-%{_bindir}/texindex
-%{_bindir}/texi2dvi
-%{_bindir}/texi2pdf
-%{_bindir}/pdftexi2dvi
-%{tex_texinfo}/

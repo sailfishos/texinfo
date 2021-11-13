@@ -1,0 +1,35 @@
+diff --git a/Makefile.am b/Makefile.am
+index 6edfb1f9f9..a6b0b67ea0 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -62,7 +62,7 @@ if HOST_IS_WINDOWS
+   SUBDIRS += info
+ endif
+ endif
+-  SUBDIRS += install-info po po_document tp Pod-Simple-Texinfo texindex util \
++  SUBDIRS += install-info po po_document tp Pod-Simple-Texinfo \
+              doc man
+ endif
+ 
+diff --git a/man/Makefile.am b/man/Makefile.am
+index d0cd72c688..e5c7695ddd 100644
+--- a/man/Makefile.am
++++ b/man/Makefile.am
+@@ -11,7 +11,7 @@
+ # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ 
+ # These are generated using help2man.
+-man_MANS = install-info.1 makeinfo.1 texindex.1 texi2dvi.1
++man_MANS = install-info.1 makeinfo.1
+ 
+ # These require the build in info/, thus can't do if we failed to find a
+ # terminal library.
+@@ -29,7 +29,7 @@ pod2texi.1: $(top_srcdir)/Pod-Simple-Texinfo/pod2texi.pl
+ 
+ 
+ # These are just .so's to the common program.
+-man_MANS += texi2any.1 texi2pdf.1 pdftexi2dvi.1
++man_MANS += texi2any.1
+ 
+ EXTRA_DIST = $(man_MANS) ginfo.h2m
+ 
