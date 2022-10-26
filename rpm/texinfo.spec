@@ -2,20 +2,28 @@
 
 Summary: Tools needed to create Texinfo format documentation files
 Name: texinfo
-Version: 4.13a
-Release: 8
+Version: 6.3
+Release: 1
 License: GPLv3+
-Group: Applications/Publishing
 Url: http://www.gnu.org/software/texinfo/
-Source0: ftp://ftp.gnu.org/gnu/texinfo/texinfo-%{version}.tar.gz
+Source0: %{name}-%{version}.tar.gz
 Source1: info-dir
-Source2: texi2pdf.man
 Patch0: texinfo-4.12-zlib.patch
-Patch1: texinfo-4.13a-data_types.patch
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires: zlib-devel, ncurses-devel
+BuildRequires: automake
+BuildRequires: gcc
+BuildRequires: gettext
+BuildRequires: help2man
+BuildRequires: libtool
+BuildRequires: pkgconfig(zlib)
+BuildRequires: pkgconfig(ncurses)
+
+%global __provides_exclude ^perl\\(.*Texinfo.*\\)$
+%global __requires_exclude ^perl\\(.*Texinfo.*\\)$
+%global __provides_exclude ^perl\\(.*gettext_xs.*\\)$
+%global __requires_exclude ^perl\\(.*gettext_xs.*\\)$
 
 %description
 Texinfo is a documentation system that can produce both online
@@ -28,7 +36,6 @@ are going to write documentation for the GNU Project.
 
 %package doc
 Summary:   Documentation for %{name}
-Group:     Documentation
 Requires:  %{name} = %{version}-%{release}
 Requires(post): /sbin/install-info
 Requires(postun): /sbin/install-info
@@ -38,7 +45,6 @@ Man and info pages for %{name}.
 
 %package -n info
 Summary: A stand-alone TTY-based reader for GNU texinfo documentation
-Group: System/Base
 
 %description -n info
 The GNU project uses the texinfo file format for much of its
@@ -47,7 +53,6 @@ browser program for viewing texinfo files.
 
 %package -n info-doc
 Summary:   Documentation for info
-Group:     Documentation
 Requires:  info = %{version}-%{release}
 Requires(post): /sbin/install-info
 Requires(postun): /sbin/install-info
@@ -57,7 +62,6 @@ Man and info pages for info.
 
 %package tex
 Summary: Tools for formatting Texinfo documentation files using TeX
-Group: Applications/Publishing
 Requires: texinfo = %{version}-%{release}
 Requires: tetex
 Requires(post): %{_bindir}/texconfig-sys
@@ -72,40 +76,30 @@ The texinfo-tex package provides tools to format Texinfo documents
 for printing using TeX.
 
 %prep
-%setup -q -n %{name}-4.13
-%patch0 -p1 -b .zlib
-%patch1 -p1 -b .data_types
+%autosetup -p1 -n %{name}-%{version}/%{name}
 
 %build
-%configure
-make %{?_smp_mflags}
+./autogen.sh
+%configure --disable-perl-xs
+%make_build
 
 %install
-rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}/sbin
 
-make install DESTDIR=$RPM_BUILD_ROOT INSTALL='install -p'
+%make_install
 
 mkdir -p $RPM_BUILD_ROOT%{tex_texinfo}
 install -p -m644 doc/texinfo.tex doc/txi-??.tex $RPM_BUILD_ROOT%{tex_texinfo}
 
-install -p -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_mandir}/man1/texi2pdf.1
 install -p -m644 %{SOURCE1} $RPM_BUILD_ROOT%{_infodir}/dir
 mv $RPM_BUILD_ROOT%{_bindir}/install-info $RPM_BUILD_ROOT/sbin
 
 mkdir -p $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version}
 install -m0644 -t $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version} \
-        AUTHORS ChangeLog INTRODUCTION NEWS README TODO
+        AUTHORS ChangeLog ChangeLog.46 NEWS README TODO
 
-# Convert ChangeLog to UTF-8
-/usr/bin/iconv -f iso-8859-2 -t utf-8 < ChangeLog > ChangeLog_utf8
-touch -r ChangeLog ChangeLog_utf8
-mv ChangeLog_utf8 ChangeLog
-
-%find_lang %name
-
-%clean
-rm -rf ${RPM_BUILD_ROOT}
+%find_lang %{name}
+%find_lang %{name}_document
 
 %post doc
 if [ -f %{_infodir}/texinfo ]; then # --excludedocs?
@@ -142,10 +136,12 @@ fi
 %{_bindir}/texconfig-sys rehash 2> /dev/null || :
 
 
-%files -f %{name}.lang
+%files -f %{name}.lang -f %{name}_document.lang
 %defattr(-,root,root,-)
 %license COPYING
 %{_bindir}/makeinfo
+%{_bindir}/texi2any
+%{_bindir}/pod2texi
 %{_datadir}/texinfo
 %{_infodir}/texinfo*
 
@@ -155,9 +151,12 @@ fi
 %{_mandir}/man1/makeinfo.1*
 %{_mandir}/man5/%{name}.5*
 %{_mandir}/man1/texindex.1*
+%{_mandir}/man1/texi2any.1*
 %{_mandir}/man1/texi2dvi.1*
 %{_mandir}/man1/texi2pdf.1*
 %{_mandir}/man1/pdftexi2dvi.1*
+%{_mandir}/man1/pod2texi.1*
+
 %{_docdir}/%{name}-%{version}
 
 %files -n info
@@ -165,15 +164,12 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_infodir}/dir
 %license COPYING
 %{_bindir}/info
-%{_bindir}/infokey
 /sbin/install-info
 
 %files -n info-doc
 %defattr(-,root,root,-)
-%{_infodir}/info.info*
 %{_infodir}/info-stnd.info*
 %{_mandir}/man1/info.1*
-%{_mandir}/man1/infokey.1*
 %{_mandir}/man1/install-info.1*
 %{_mandir}/man5/info.5*
 

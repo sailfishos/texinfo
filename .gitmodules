@@ -1,0 +1,3 @@
+[submodule "texinfo"]
+	path = texinfo
+	url = https://github.com/sailfishos-mirror/texinfo.git
