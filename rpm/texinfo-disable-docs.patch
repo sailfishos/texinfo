@@ -1,0 +1,13 @@
+diff --git a/Makefile.am b/Makefile.am
+index bb6adaec8b..4f7f7c654c 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -67,7 +67,7 @@ if HOST_IS_WINDOWS
+ endif
+ endif
+   SUBDIRS += install-info po po_document tp Pod-Simple-Texinfo texindex util \
+-             doc man
++             doc
+ endif
+ 
+ distclean-local:

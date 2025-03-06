@@ -9,13 +9,13 @@ Url: http://www.gnu.org/software/texinfo/
 Source0: %{name}-%{version}.tar.gz
 Source1: info-dir
 Patch0: texinfo-4.12-zlib.patch
+Patch1: texinfo-disable-docs.patch
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: automake
 BuildRequires: gcc
 BuildRequires: gettext
-BuildRequires: help2man
 BuildRequires: libtool
 BuildRequires: pkgconfig(zlib)
 BuildRequires: pkgconfig(ncurses)
@@ -137,7 +137,6 @@ fi
 
 
 %files -f %{name}.lang -f %{name}_document.lang
-%defattr(-,root,root,-)
 %license COPYING
 %{_bindir}/makeinfo
 %{_bindir}/texi2any
@@ -146,35 +145,20 @@ fi
 %{_infodir}/texinfo*
 
 %files doc
-%defattr(-,root,root,-)
 %{_infodir}/%{name}*.*
-%{_mandir}/man1/makeinfo.1*
-%{_mandir}/man5/%{name}.5*
-%{_mandir}/man1/texindex.1*
-%{_mandir}/man1/texi2any.1*
-%{_mandir}/man1/texi2dvi.1*
-%{_mandir}/man1/texi2pdf.1*
-%{_mandir}/man1/pdftexi2dvi.1*
-%{_mandir}/man1/pod2texi.1*
 
 %{_docdir}/%{name}-%{version}
 
 %files -n info
-%defattr(-,root,root,-)
 %config(noreplace) %verify(not md5 size mtime) %{_infodir}/dir
 %license COPYING
 %{_bindir}/info
 /sbin/install-info
 
 %files -n info-doc
-%defattr(-,root,root,-)
 %{_infodir}/info-stnd.info*
-%{_mandir}/man1/info.1*
-%{_mandir}/man1/install-info.1*
-%{_mandir}/man5/info.5*
 
 %files tex
-%defattr(-,root,root)
 %{_bindir}/texindex
 %{_bindir}/texi2dvi
 %{_bindir}/texi2pdf
